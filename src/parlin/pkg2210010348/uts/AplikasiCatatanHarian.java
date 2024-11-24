@@ -8,11 +8,15 @@ import com.github.lgooddatepicker.optionalusertools.CalendarListener;
 import com.github.lgooddatepicker.zinternaltools.CalendarSelectionEvent;
 import com.github.lgooddatepicker.zinternaltools.YearMonthChangeEvent;
 import java.awt.Dimension;
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.DefaultListModel;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import parlin.pkg2210010348.uts.model.Catatan;
 
 /**
@@ -29,7 +33,7 @@ public class AplikasiCatatanHarian extends javax.swing.JFrame {
     public AplikasiCatatanHarian() {
         semuaCatatan = new ArrayList<>(); // Inisialisasi daftar catatan
         initComponents();
-        initDataDummy(); // Inisialisasi data dummy
+        loadCatatanFromFile(); // Mengimpor data catatan dari file catatan.txt
         initListListener(); // Tambahkan listener untuk JList
         initCalendarListener(); // Tambahkan listener untuk Calendar
         updateListModel(semuaCatatan); // Tampilkan semua catatan di awal
@@ -38,10 +42,21 @@ public class AplikasiCatatanHarian extends javax.swing.JFrame {
 
     }
 
-    private void initDataDummy() {
-        semuaCatatan.add(new Catatan("Belajar Java", LocalDate.now(), "Pelajari konsep OOP"));
-        semuaCatatan.add(new Catatan("Meeting", LocalDate.of(2024, 11, 29), "Diskusi dengan tim proyek."));
-        semuaCatatan.add(new Catatan("Liburan", LocalDate.of(2024, 12, 15), "Persiapkan perjalanan ke Bali."));
+    private void loadCatatanFromFile() {
+        // Menentukan path file catatan.txt di folder kerja saat ini
+        String filePath = "catatan.txt";
+
+        // Mencoba mengimpor catatan dari file
+        try {
+            List<Catatan> importedCatatan = CatatanFileHelper.importCatatanFromFile(filePath);
+            semuaCatatan.addAll(importedCatatan);  // Menambahkan catatan yang diimpor ke dalam daftar
+        } catch (IOException | IllegalArgumentException e) {
+            // Jika ada error saat membaca file, hapus file catatan.txt
+            File file = new File(filePath);
+            if (file.exists()) {
+                file.delete();  // Hapus file catatan.txt jika terjadi error
+            }
+        }
     }
 
     private void initListListener() {
@@ -112,6 +127,7 @@ public class AplikasiCatatanHarian extends javax.swing.JFrame {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel2 = new javax.swing.JPanel();
         jTabbedPane2 = new javax.swing.JTabbedPane();
@@ -145,6 +161,8 @@ public class AplikasiCatatanHarian extends javax.swing.JFrame {
         listCatatan = new javax.swing.JList<>();
         jPanel5 = new javax.swing.JPanel();
         btnBuatCatatanBaru = new javax.swing.JButton();
+        btnExportCatatan = new javax.swing.JButton();
+        btnImportCatatan = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Parlin (2210010348) Aplikasi catatan harian");
@@ -285,13 +303,47 @@ public class AplikasiCatatanHarian extends javax.swing.JFrame {
 
         jPanel1.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
+        jPanel5.setLayout(new java.awt.GridBagLayout());
+
         btnBuatCatatanBaru.setText("Buat Catatan Baru");
         btnBuatCatatanBaru.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnBuatCatatanBaruActionPerformed(evt);
             }
         });
-        jPanel5.add(btnBuatCatatanBaru);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        jPanel5.add(btnBuatCatatanBaru, gridBagConstraints);
+
+        btnExportCatatan.setText("Export Catatan");
+        btnExportCatatan.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnExportCatatanActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        jPanel5.add(btnExportCatatan, gridBagConstraints);
+
+        btnImportCatatan.setText("Import Catatan");
+        btnImportCatatan.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnImportCatatanActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        jPanel5.add(btnImportCatatan, gridBagConstraints);
 
         jPanel1.add(jPanel5, java.awt.BorderLayout.SOUTH);
 
@@ -476,6 +528,88 @@ public class AplikasiCatatanHarian extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnHapusCatatanActionPerformed
 
+    private void btnImportCatatanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnImportCatatanActionPerformed
+        // Membuat JFileChooser untuk memilih file yang akan diimpor
+        JFileChooser fileChooser = new JFileChooser();
+
+        // Set folder default ke folder kerja saat ini
+        fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+
+        // Set nama file default
+        fileChooser.setSelectedFile(new File("catatan.txt"));
+
+        // Set filter untuk hanya menampilkan file .txt
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Text Files (*.txt)", "txt"));
+
+        // Menampilkan dialog pilih file
+        int result = fileChooser.showOpenDialog(this);
+
+        // Jika user memilih tombol "Open"
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File fileToOpen = fileChooser.getSelectedFile();
+
+            try {
+                // Membaca catatan dari file yang dipilih
+                List<Catatan> importedCatatan = CatatanFileHelper.importCatatanFromFile(fileToOpen.getAbsolutePath());
+
+                // Memasukkan catatan yang diimpor ke dalam list atau database aplikasi
+                // Misalnya, kita menyimpan ke dalam list `semuaCatatan`
+                semuaCatatan.clear(); // Jika ingin mengganti semua catatan yang ada
+                semuaCatatan.addAll(importedCatatan);
+
+                // Update model JList setelah catatan diimpor
+                updateListModel(semuaCatatan);
+
+                // Memberikan pesan keberhasilan
+                JOptionPane.showMessageDialog(this, "Catatan berhasil diimpor dari " + fileToOpen.getAbsolutePath(),
+                        "Impor Sukses", JOptionPane.INFORMATION_MESSAGE);
+            } catch (IOException | IllegalArgumentException e) {
+                JOptionPane.showMessageDialog(this, "Terjadi kesalahan saat mengimpor catatan: " + e.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }//GEN-LAST:event_btnImportCatatanActionPerformed
+
+    private void btnExportCatatanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExportCatatanActionPerformed
+        // Membuat JFileChooser untuk memilih lokasi file
+        JFileChooser fileChooser = new JFileChooser();
+
+        // Set folder default ke folder kerja saat ini
+        fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir")));
+
+        // Set nama file default
+        fileChooser.setSelectedFile(new File("catatan.txt"));
+
+        // Set filter untuk hanya menampilkan file .txt
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Text Files (*.txt)", "txt"));
+
+        // Menampilkan dialog simpan file
+        int result = fileChooser.showSaveDialog(this);
+
+        // Jika user memilih tombol "Save"
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+
+            // Pastikan file memiliki ekstensi .txt
+            String filePath = fileToSave.getAbsolutePath();
+            if (!filePath.endsWith(".txt")) {
+                filePath += ".txt"; // Menambahkan ekstensi .txt jika belum ada
+            }
+
+            try {
+                // Ambil daftar catatan
+                List<Catatan> catatanList = semuaCatatan;
+                // Ekspor catatan ke file yang dipilih
+                CatatanFileHelper.exportCatatanToFile(catatanList, filePath);
+                JOptionPane.showMessageDialog(this, "Catatan berhasil diekspor ke " + filePath,
+                        "Ekspor Sukses", JOptionPane.INFORMATION_MESSAGE);
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(this, "Terjadi kesalahan saat mengekspor catatan: " + e.getMessage(),
+                        "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }//GEN-LAST:event_btnExportCatatanActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -515,7 +649,9 @@ public class AplikasiCatatanHarian extends javax.swing.JFrame {
     private javax.swing.JButton btnBuatCatatanBaru;
     private javax.swing.JButton btnCariCatatan;
     private javax.swing.JButton btnEditCatatan;
+    private javax.swing.JButton btnExportCatatan;
     private javax.swing.JButton btnHapusCatatan;
+    private javax.swing.JButton btnImportCatatan;
     private javax.swing.JButton btnSimpan;
     private com.github.lgooddatepicker.components.CalendarPanel calendarCatatan;
     private com.github.lgooddatepicker.components.DatePicker dateTanggal;
