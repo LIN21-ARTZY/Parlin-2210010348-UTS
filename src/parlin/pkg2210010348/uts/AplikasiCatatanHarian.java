@@ -4,7 +4,16 @@
  */
 package parlin.pkg2210010348.uts;
 
+import com.github.lgooddatepicker.optionalusertools.CalendarListener;
+import com.github.lgooddatepicker.zinternaltools.CalendarSelectionEvent;
+import com.github.lgooddatepicker.zinternaltools.YearMonthChangeEvent;
 import java.awt.Dimension;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.DefaultListModel;
+import javax.swing.JOptionPane;
+import parlin.pkg2210010348.uts.model.Catatan;
 
 /**
  *
@@ -12,11 +21,87 @@ import java.awt.Dimension;
  */
 public class AplikasiCatatanHarian extends javax.swing.JFrame {
 
+    private final List<Catatan> semuaCatatan; // Menyimpan data asli
+
     /**
      * Creates new form AplikasiCatatanHarian
      */
     public AplikasiCatatanHarian() {
+        semuaCatatan = new ArrayList<>(); // Inisialisasi daftar catatan
         initComponents();
+        initDataDummy(); // Inisialisasi data dummy
+        initListListener(); // Tambahkan listener untuk JList
+        initCalendarListener(); // Tambahkan listener untuk Calendar
+        updateListModel(semuaCatatan); // Tampilkan semua catatan di awal
+
+        jTabbedPane2.setEnabled(false);  // Menonaktifkan semua tab
+
+    }
+
+    private void initDataDummy() {
+        semuaCatatan.add(new Catatan("Belajar Java", LocalDate.now(), "Pelajari konsep OOP"));
+        semuaCatatan.add(new Catatan("Meeting", LocalDate.of(2024, 11, 29), "Diskusi dengan tim proyek."));
+        semuaCatatan.add(new Catatan("Liburan", LocalDate.of(2024, 12, 15), "Persiapkan perjalanan ke Bali."));
+    }
+
+    private void initListListener() {
+        listCatatan.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) { // Pastikan hanya merespons saat pemilihan selesai
+                Catatan selectedCatatan = listCatatan.getSelectedValue();
+                if (selectedCatatan != null) {
+                    updateLabels(selectedCatatan); // Perbarui label dengan detail catatan
+                } else {
+                    resetLabels(); // Reset label jika tidak ada catatan yang dipilih
+                }
+            }
+        });
+    }
+
+    private void updateLabels(Catatan catatan) {
+        lblJudulCatatan.setText(catatan.getJudul());
+        lblTanggalCatatan.setText(catatan.getTanggal().toString());
+        lblIsiCatatan.setText(catatan.getIsi());
+    }
+
+    private void resetLabels() {
+        lblJudulCatatan.setText("Judul Catatan...");
+        lblTanggalCatatan.setText("Tanggal Catatan...");
+        lblIsiCatatan.setText("Isi Catatan...");
+    }
+
+    private void initCalendarListener() {
+        calendarCatatan.addCalendarListener(new CalendarListener() {
+            @Override
+            public void selectedDateChanged(CalendarSelectionEvent cse) {
+                LocalDate newDate = cse.getNewDate();
+                if (newDate == null) {
+                    updateListModel(semuaCatatan); // Tampilkan semua catatan
+                } else {
+                    filterCatatanByDate(newDate); // Tampilkan catatan berdasarkan tanggal
+                }
+            }
+
+            @Override
+            public void yearMonthChanged(YearMonthChangeEvent ymce) {
+                // Tidak diperlukan aksi untuk perubahan bulan/tahun
+            }
+        });
+    }
+
+    private void filterCatatanByDate(LocalDate date) {
+        List<Catatan> filteredCatatan = semuaCatatan.stream()
+                .filter(catatan -> catatan.getTanggal().equals(date))
+                .toList();
+        updateListModel(filteredCatatan);
+    }
+
+    /**
+     * Method untuk memperbarui model JList dengan daftar catatan baru
+     */
+    private void updateListModel(List<Catatan> daftarCatatan) {
+        DefaultListModel<Catatan> model = new DefaultListModel<>();
+        daftarCatatan.forEach(model::addElement); // Tambahkan semua catatan ke model
+        listCatatan.setModel(model); // Set model ke JList
     }
 
     /**
@@ -47,6 +132,7 @@ public class AplikasiCatatanHarian extends javax.swing.JFrame {
         jScrollPane2 = new javax.swing.JScrollPane();
         txtIsiCatatan = new javax.swing.JTextArea();
         jPanel4 = new javax.swing.JPanel();
+        btnSimpan = new javax.swing.JButton();
         btnEditCatatan = new javax.swing.JButton();
         btnHapusCatatan = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
@@ -64,6 +150,12 @@ public class AplikasiCatatanHarian extends javax.swing.JFrame {
         setTitle("Parlin (2210010348) Aplikasi catatan harian");
 
         jPanel2.setLayout(new java.awt.BorderLayout());
+
+        jTabbedPane2.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jTabbedPane2StateChanged(evt);
+            }
+        });
 
         jPanel6.setBorder(javax.swing.BorderFactory.createEmptyBorder(4, 4, 4, 4));
         jPanel6.setLayout(new java.awt.BorderLayout());
@@ -134,10 +226,29 @@ public class AplikasiCatatanHarian extends javax.swing.JFrame {
 
         jPanel4.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.TRAILING));
 
+        btnSimpan.setText("Simpan");
+        btnSimpan.setEnabled(false);
+        btnSimpan.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSimpanActionPerformed(evt);
+            }
+        });
+        jPanel4.add(btnSimpan);
+
         btnEditCatatan.setText("Edit Catatan");
+        btnEditCatatan.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEditCatatanActionPerformed(evt);
+            }
+        });
         jPanel4.add(btnEditCatatan);
 
         btnHapusCatatan.setText("Hapus Catatan");
+        btnHapusCatatan.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnHapusCatatanActionPerformed(evt);
+            }
+        });
         jPanel4.add(btnHapusCatatan);
 
         jPanel2.add(jPanel4, java.awt.BorderLayout.SOUTH);
@@ -159,6 +270,11 @@ public class AplikasiCatatanHarian extends javax.swing.JFrame {
         jPanel3.add(txtCariCatatan);
 
         btnCariCatatan.setText("Cari Catatan");
+        btnCariCatatan.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCariCatatanActionPerformed(evt);
+            }
+        });
         jPanel3.add(btnCariCatatan);
 
         jTabbedPane1.addTab("Cari", jPanel3);
@@ -170,6 +286,11 @@ public class AplikasiCatatanHarian extends javax.swing.JFrame {
         jPanel1.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
         btnBuatCatatanBaru.setText("Buat Catatan Baru");
+        btnBuatCatatanBaru.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBuatCatatanBaruActionPerformed(evt);
+            }
+        });
         jPanel5.add(btnBuatCatatanBaru);
 
         jPanel1.add(jPanel5, java.awt.BorderLayout.SOUTH);
@@ -180,15 +301,180 @@ public class AplikasiCatatanHarian extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jTabbedPane1StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jTabbedPane1StateChanged
+        // Reset filter dan tampilkan semua catatan ketika tab berubah
+        updateListModel(semuaCatatan);
+
+        // Sesuaikan ukuran tabpane berdasarkan tab yang dipilih
         switch (jTabbedPane1.getSelectedIndex()) {
-            case 0: 
+            case 0:
+                // Jika tab pertama (Calendar) dipilih, sesuaikan ukuran tabpane agar lebih tinggi
                 jTabbedPane1.setPreferredSize(new Dimension(240, 240));
                 break;
             case 1:
+                // Jika tab kedua (Cari) dipilih, sesuaikan ukuran tabpane agar lebih pendek
                 jTabbedPane1.setPreferredSize(new Dimension(240, 64));
                 break;
         }
     }//GEN-LAST:event_jTabbedPane1StateChanged
+
+    private void btnCariCatatanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCariCatatanActionPerformed
+        String searchText = txtCariCatatan.getText().trim().toLowerCase(); // Ambil teks pencarian dan ubah ke huruf kecil
+        if (searchText.isEmpty()) {
+            // Jika teks kosong, tampilkan semua catatan
+            updateListModel(semuaCatatan);
+        } else {
+            // Filter catatan berdasarkan teks pencarian
+            List<Catatan> filteredCatatan = semuaCatatan.stream()
+                    .filter(catatan -> catatan.toString().toLowerCase().contains(searchText)
+                    || catatan.getIsi().toLowerCase().contains(searchText))
+                    .toList();
+            updateListModel(filteredCatatan);
+        }
+    }//GEN-LAST:event_btnCariCatatanActionPerformed
+
+    private void btnBuatCatatanBaruActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBuatCatatanBaruActionPerformed
+        // Pindah ke tab "Editor" untuk membuat catatan baru
+        jTabbedPane2.setSelectedIndex(1);  // 1 adalah indeks tab "Editor"
+
+        // Aktifkan tombol simpan
+        btnSimpan.setEnabled(true);
+
+        // Nonaktifkan tombol "Buat Catatan Baru", "Edit Catatan", dan "Hapus Catatan"
+        btnBuatCatatanBaru.setEnabled(false);
+        btnEditCatatan.setEnabled(false);
+        btnHapusCatatan.setEnabled(false);
+
+        // Nonaktifkan JList dan tabpane kanan agar tidak bisa berinteraksi saat membuat catatan baru
+        listCatatan.setEnabled(false);
+        jTabbedPane2.setEnabled(false);
+
+        // Reset fields di editor untuk memastikan form kosong
+        txtJudul.setText("");
+        txtIsiCatatan.setText("");
+        dateTanggal.setDate(null); // Reset tanggal
+    }//GEN-LAST:event_btnBuatCatatanBaruActionPerformed
+
+    private void jTabbedPane2StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jTabbedPane2StateChanged
+
+    }//GEN-LAST:event_jTabbedPane2StateChanged
+
+    private void btnEditCatatanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditCatatanActionPerformed
+        // Pastikan ada catatan yang dipilih dari JList
+        Catatan selectedCatatan = listCatatan.getSelectedValue();
+
+        if (selectedCatatan != null) {
+            // Pindah ke tab "Editor" untuk mengedit catatan yang dipilih
+            jTabbedPane2.setSelectedIndex(1);  // 1 adalah indeks tab "Editor"
+
+            // Aktifkan tombol simpan
+            btnSimpan.setEnabled(true);
+
+            // Nonaktifkan tombol "Buat Catatan Baru", "Edit Catatan", dan "Hapus Catatan"
+            btnBuatCatatanBaru.setEnabled(false);
+            btnEditCatatan.setEnabled(false);
+            btnHapusCatatan.setEnabled(false);
+
+            // Nonaktifkan JList dan tabpane kanan agar tidak bisa berinteraksi saat mengedit catatan
+            listCatatan.setEnabled(false);
+            jTabbedPane2.setEnabled(false);
+
+            // Tampilkan detail catatan yang dipilih di editor
+            txtJudul.setText(selectedCatatan.getJudul());
+            txtIsiCatatan.setText(selectedCatatan.getIsi());
+            dateTanggal.setDate(selectedCatatan.getTanggal());
+        } else {
+            // Jika tidak ada catatan yang dipilih, tampilkan pesan atau lakukan tindakan lainnya
+            JOptionPane.showMessageDialog(this, "Pilih catatan yang ingin diedit!", "Peringatan", JOptionPane.WARNING_MESSAGE);
+        }
+    }//GEN-LAST:event_btnEditCatatanActionPerformed
+
+    private void btnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSimpanActionPerformed
+        // Cek apakah ada catatan yang sedang diedit atau membuat catatan baru
+        String judul = txtJudul.getText().trim();
+        String isi = txtIsiCatatan.getText().trim();
+
+        // Ambil tanggal dari JDateChooser
+        LocalDate tanggal = dateTanggal.getDate();
+        if (tanggal == null) {
+            // Jika tanggal tidak dipilih, tampilkan pesan kesalahan
+            JOptionPane.showMessageDialog(this, "Tanggal harus dipilih!", "Kesalahan", JOptionPane.ERROR_MESSAGE);
+            return;  // Jangan lanjutkan jika tanggal kosong
+        }
+
+        if (judul.isEmpty() || isi.isEmpty()) {
+            // Jika ada field yang kosong, tampilkan pesan kesalahan
+            JOptionPane.showMessageDialog(this, "Pastikan semua kolom terisi!", "Kesalahan", JOptionPane.ERROR_MESSAGE);
+            return;  // Jangan lanjutkan jika ada field kosong
+        }
+
+        // Jika sedang membuat catatan baru, tambahkan catatan baru ke daftar
+        if (listCatatan.getSelectedValue() == null) {
+            // Membuat catatan baru
+            Catatan newCatatan = new Catatan(judul, tanggal, isi);
+            semuaCatatan.add(newCatatan);
+        } else {
+            // Mengedit catatan yang dipilih
+            Catatan selectedCatatan = listCatatan.getSelectedValue();
+            selectedCatatan.setJudul(judul);
+            selectedCatatan.setIsi(isi);
+            selectedCatatan.setTanggal(tanggal);
+        }
+
+        // Update model JList dengan data terbaru
+        updateListModel(semuaCatatan);
+
+        // Reset form editor setelah simpan
+        txtJudul.setText("");
+        txtIsiCatatan.setText("");
+        dateTanggal.setDate(null);  // Reset tanggal
+
+        // Kembali ke tab daftar catatan setelah simpan
+        jTabbedPane2.setSelectedIndex(0);  // Kembali ke tab "Daftar Catatan"
+
+        // Aktifkan tombol "Buat Catatan Baru", "Edit Catatan", dan "Hapus Catatan"
+        btnBuatCatatanBaru.setEnabled(true);
+        btnEditCatatan.setEnabled(true);
+        btnHapusCatatan.setEnabled(true);
+
+        // Aktifkan JList dan tabpane kanan setelah simpan
+        listCatatan.setEnabled(true);
+        jTabbedPane2.setEnabled(true);
+
+        // Nonaktifkan tombol simpan
+        btnSimpan.setEnabled(false);
+    }//GEN-LAST:event_btnSimpanActionPerformed
+
+    private void btnHapusCatatanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHapusCatatanActionPerformed
+        // Ambil catatan yang sedang dipilih
+        Catatan selectedCatatan = listCatatan.getSelectedValue();
+
+        if (selectedCatatan != null) {
+            // Konfirmasi penghapusan
+            int confirmation = JOptionPane.showConfirmDialog(this,
+                    "Apakah Anda yakin ingin menghapus catatan ini?",
+                    "Konfirmasi Hapus",
+                    JOptionPane.YES_NO_OPTION);
+
+            if (confirmation == JOptionPane.YES_OPTION) {
+                // Hapus catatan dari daftar
+                semuaCatatan.remove(selectedCatatan);
+
+                // Update model JList untuk menampilkan daftar catatan terbaru
+                updateListModel(semuaCatatan);
+
+                // Reset field editor setelah menghapus catatan
+                txtJudul.setText("");
+                txtIsiCatatan.setText("");
+                dateTanggal.setDate(null);  // Reset tanggal
+
+                // Tampilkan pesan bahwa catatan berhasil dihapus
+                JOptionPane.showMessageDialog(this, "Catatan berhasil dihapus.", "Sukses", JOptionPane.INFORMATION_MESSAGE);
+            }
+        } else {
+            // Jika tidak ada catatan yang dipilih, beri peringatan
+            JOptionPane.showMessageDialog(this, "Pilih catatan yang ingin dihapus terlebih dahulu.", "Peringatan", JOptionPane.WARNING_MESSAGE);
+        }
+    }//GEN-LAST:event_btnHapusCatatanActionPerformed
 
     /**
      * @param args the command line arguments
@@ -230,6 +516,7 @@ public class AplikasiCatatanHarian extends javax.swing.JFrame {
     private javax.swing.JButton btnCariCatatan;
     private javax.swing.JButton btnEditCatatan;
     private javax.swing.JButton btnHapusCatatan;
+    private javax.swing.JButton btnSimpan;
     private com.github.lgooddatepicker.components.CalendarPanel calendarCatatan;
     private com.github.lgooddatepicker.components.DatePicker dateTanggal;
     private javax.swing.JLabel jLabel3;
@@ -253,7 +540,7 @@ public class AplikasiCatatanHarian extends javax.swing.JFrame {
     private javax.swing.JLabel lblIsiCatatan;
     private javax.swing.JLabel lblJudulCatatan;
     private javax.swing.JLabel lblTanggalCatatan;
-    private javax.swing.JList<String> listCatatan;
+    private javax.swing.JList<Catatan> listCatatan;
     private javax.swing.JTextField txtCariCatatan;
     private javax.swing.JTextArea txtIsiCatatan;
     private javax.swing.JTextField txtJudul;
