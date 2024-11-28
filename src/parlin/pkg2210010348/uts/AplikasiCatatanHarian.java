@@ -5,14 +5,18 @@
 package parlin.pkg2210010348.uts;
 
 import com.github.lgooddatepicker.optionalusertools.CalendarListener;
+import com.github.lgooddatepicker.optionalusertools.DateHighlightPolicy;
 import com.github.lgooddatepicker.zinternaltools.CalendarSelectionEvent;
+import com.github.lgooddatepicker.zinternaltools.HighlightInformation;
 import com.github.lgooddatepicker.zinternaltools.YearMonthChangeEvent;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -39,6 +43,33 @@ public class AplikasiCatatanHarian extends javax.swing.JFrame {
         updateListModel(semuaCatatan); // Tampilkan semua catatan di awal
 
         jTabbedPane2.setEnabled(false);  // Menonaktifkan semua tab
+
+        // Mengatur locale kalender ke Bahasa Indonesia (ID)
+        calendarCatatan.getSettings().setLocale(new Locale("in", "ID"));
+
+        // Menetapkan kebijakan highlight untuk kalender
+        calendarCatatan.getSettings().setHighlightPolicy(new DateHighlightPolicy() {
+            @Override
+            public HighlightInformation getHighlightInformationOrNull(LocalDate date) {
+                // Mengecek apakah ada catatan yang tanggalnya sesuai dengan tanggal yang dipilih
+                boolean hasCatatan = semuaCatatan.stream()
+                        .anyMatch(catatan -> catatan.getTanggal().equals(date));
+
+                // Jika ada catatan pada tanggal ini
+                if (hasCatatan) {
+                    // Mengembalikan informasi highlight dengan warna latar belakang biru dan teks putih
+                    // Ini berarti tanggal ini akan disorot dengan warna biru jika ada catatan
+                    return new HighlightInformation(
+                            Color.BLUE, // Warna latar belakang biru
+                            Color.WHITE, // Warna teks putih
+                            "Ada catatan di sini!" // Tooltip yang ditampilkan saat kursor berada di tanggal tersebut
+                    );
+                }
+
+                // Jika tidak ada catatan pada tanggal ini, maka tanggal ini tidak disorot
+                return null;
+            }
+        });
 
     }
 
@@ -149,6 +180,7 @@ public class AplikasiCatatanHarian extends javax.swing.JFrame {
         txtIsiCatatan = new javax.swing.JTextArea();
         jPanel4 = new javax.swing.JPanel();
         btnSimpan = new javax.swing.JButton();
+        btnReset = new javax.swing.JButton();
         btnEditCatatan = new javax.swing.JButton();
         btnHapusCatatan = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
@@ -252,6 +284,14 @@ public class AplikasiCatatanHarian extends javax.swing.JFrame {
             }
         });
         jPanel4.add(btnSimpan);
+
+        btnReset.setText("Reset");
+        btnReset.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnResetActionPerformed(evt);
+            }
+        });
+        jPanel4.add(btnReset);
 
         btnEditCatatan.setText("Edit Catatan");
         btnEditCatatan.addActionListener(new java.awt.event.ActionListener() {
@@ -610,6 +650,31 @@ public class AplikasiCatatanHarian extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnExportCatatanActionPerformed
 
+    private void btnResetActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnResetActionPerformed
+        // Reset field teks (judul, isi catatan, dan tanggal)
+        txtJudul.setText("");  // Mengosongkan JTextField untuk judul
+        txtIsiCatatan.setText("");  // Mengosongkan JTextArea untuk isi catatan
+        dateTanggal.setDate(null);  // Mengosongkan tanggal (null jika tidak ada tanggal yang dipilih)
+
+        // Reset label
+        resetLabels();  // Memanggil method untuk mereset label
+
+        // Reset JList (deselect)
+        listCatatan.clearSelection();  // Membatalkan pilihan pada JList
+
+        // Aktifkan kembali kontrol yang dinonaktifkan
+        btnSimpan.setEnabled(false);  // Nonaktifkan tombol simpan
+        btnBuatCatatanBaru.setEnabled(true);  // Aktifkan tombol buat catatan baru
+        btnEditCatatan.setEnabled(true);  // Aktifkan tombol edit catatan
+        btnHapusCatatan.setEnabled(true);  // Aktifkan tombol hapus catatan
+
+        // Aktifkan kembali JList
+        listCatatan.setEnabled(true);  // Aktifkan JList
+
+        // Pindahkan ke tab catatan 
+        jTabbedPane2.setSelectedIndex(0);  // Pindah ke tab dengan index 0 (tab catatan)
+    }//GEN-LAST:event_btnResetActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -652,6 +717,7 @@ public class AplikasiCatatanHarian extends javax.swing.JFrame {
     private javax.swing.JButton btnExportCatatan;
     private javax.swing.JButton btnHapusCatatan;
     private javax.swing.JButton btnImportCatatan;
+    private javax.swing.JButton btnReset;
     private javax.swing.JButton btnSimpan;
     private com.github.lgooddatepicker.components.CalendarPanel calendarCatatan;
     private com.github.lgooddatepicker.components.DatePicker dateTanggal;

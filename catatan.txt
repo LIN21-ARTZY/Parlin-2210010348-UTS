@@ -1,9 +1,60 @@
+2024-11-24 :: Belajar Java
+Pelajari konsep dasar pemrograman dan OOP.
+
+---
+2024-11-25 :: Rapat Tim
+Membahas perkembangan proyek dengan tim.
+
+---
 2024-11-28 :: Belajar Java
-Pelajari konsep OOP
+Pelajari konsep OOP dan implementasinya dalam Java.
+
 ---
-2024-11-29 :: Meeting
-Diskusi dengan tim proyek.
+2024-12-01 :: Belanja
+Membeli bahan makanan untuk minggu depan.
+
 ---
-2024-12-15 :: Liburan
-Persiapkan perjalanan ke Bali.
+2024-12-03 :: Menyusun Rencana Kerja
+Menyusun rencana kerja untuk bulan depan.
+
+---
+2024-12-05 :: Presentasi
+Mempersiapkan slide untuk presentasi akhir tahun.
+
+---
+2024-12-08 :: Rekreasi
+Mengunjungi taman untuk jalan-jalan santai.
+
+---
+2024-12-11 :: Ujian
+Mempersiapkan ujian teknis untuk sertifikasi.
+
+---
+2024-12-14 :: Liburan
+Mempersiapkan liburan akhir tahun.
+
+---
+2024-12-16 :: Refleksi
+Merenung dan menilai pencapaian sepanjang tahun.
+
+---
+2024-12-18 :: Rapat Tim
+Rapat untuk membahas target tahun depan.
+
+---
+2024-12-20 :: Tahun Baru
+Merencanakan perayaan Tahun Baru bersama keluarga.
+
+---
+2024-12-22 :: Pekerjaan Rumah
+Menyelesaikan tugas dan pekerjaan rumah.
+
+---
+2024-12-25 :: Natal
+Menyambut liburan Natal dengan keluarga.
+
+---
+2024-12-28 :: Menyusun Resolusi
+Menyusun resolusi dan tujuan untuk tahun depan.
+
 ---
